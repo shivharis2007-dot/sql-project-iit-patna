@@ -1,0 +1,60 @@
+
+
+## Task 1. Five-part prompt for Part A q13
+
+**Role:** You are a senior SQL analyst who writes clear, portable SQL for sales reporting.
+
+**Task:** Write one query that shows, for every sales rep and every order month, the revenue from completed orders compared with the rep's monthly target, and labels each row with a performance tier.
+
+**Context:** Dialect: SQLite (standard SQL; avoid vendor-specific functions). Tables and columns:
+- `reps(rep_id, rep_name, region, monthly_target)`
+- `customers(customer_id, first_name, last_name, city, region, age, rep_id)`
+- `orders(order_id, customer_id, item, quantity, amount, status, order_month)`
+
+`customers.rep_id` links to `reps.rep_id`; `orders.customer_id` links to `customers.customer_id`. `order_month` is text such as `2026-09`. `status` holds `completed`, `pending` or `disputed` in lower case. `amount` can be NULL.
+
+**Constraints:**
+- Use completed orders only (`status = 'completed'`).
+- Tiers: `Below Target` when revenue is less than `monthly_target`; `On Target` when revenue is at least the target but less than 1.1 times the target; `Above Target` when revenue is at least 1.1 times the target.
+- Do not use `WITH` clauses and do not use stored procedures.
+- Return exactly these columns: rep_name, order_month, monthly_target, revenue, performance_tier. Sort by rep_name, then order_month.
+
+**Format:** Return raw SQL only, with no explanation outside the query, and with short inline comments (`--`) on the joins, the filter, the grouping and each tier.
+
+## Task 2. Scenario D1 defect table
+Pending: the text of the assistant's D1 answer was not available to me, so I cannot name its actual table, columns or clause yet. See notes at the end of this file.
+
+## Task 3 (partial). North revenue change, 2026-09 to 2026-10 (from q11)
+
+| Region | Month | Revenue |
+|---|---|---:|
+| North | 2026-09 | 53500 |
+| North | 2026-10 | 41300 |
+
+Change = (41300 - 53500) / 53500 = -22.8%. North's revenue fell by 22.8%. The assistant's 38% figure does not match: it is 15.2 percentage points away in size, and the real direction is a decline. No query result supports 38%, so it is a phantom statistic.
+
+## Task 6. Skeptical-analyst prompt (challenging Part C recommendation 1: West Electronics promotion)
+
+**Role:** You are a skeptical senior analyst who reviews recommendations before money is spent.
+
+**Task:** Challenge this recommendation: "Run a bundle promotion on Smart Watch plus Wireless Earbuds for West customers, because West Electronics revenue is 18800 against 73400 in North." List every unstated assumption, say which ones confuse correlation with cause, and for each one name the evidence that would confirm or weaken it.
+
+**Context:** Data is `orders_clean.csv` (63 completed orders, 2026-09 to 2026-11, revenue 346200). Regions have 6 customers each. West Electronics: 4 orders, 3 customers, 18800 in total. North Electronics: 11 orders, 5 customers, 73400.
+
+**Constraints:** Do not accept "the gap proves a promotion is needed." Separate what the data shows from what it only suggests. Do not invent figures; ask for any data you need.
+
+**Format:** A numbered list; each item has the assumption, why it may be wrong, and the specific check.
+
+### Unstated assumptions and the checks
+
+| # | Unstated assumption | Check from the data | Confirms if... / weakens if... |
+|---|---|---|---|
+| 1 | The gap is caused by missing promotion, not just that North has more Electronics buyers. | Electronics customers: West 3, North 5; orders 4 vs 11. Average order: West 4700, North 6673. | Weakens: most of the gap is order count and buyer count (a 2.75x gap in orders), not order size. A promotion must raise buyers, not basket size. |
+| 2 | 18800 is a stable level, so a lift can be measured against it. | West Electronics by month: 6400, 2800, 9600 from only 4 orders. | Weakens: one order moves a month by thousands, so a "lift" would be hard to tell from noise. |
+| 3 | Demand is the problem, not lost orders. | West Electronics non-completed orders: 3 pending (10100) and 2 disputed (12800). | Weakens: 22900 of Electronics orders were not completed, more than the 18800 completed. Resolving disputes may beat a promotion. |
+| 4 | North is a fair benchmark. | North revenue by month: 53500, 41300, 24500 (down 22.8% then 40.7%). | Weakens: the benchmark is itself falling, so West may not be "behind", North may be fading. |
+| 5 | The bundle matches what West customers buy. | West Electronics items: Wireless Earbuds 16000 (5 units), Bluetooth Speaker 2800, Smart Watch none. | Confirms the earbuds are a proven seller, but no West Smart Watch has sold, so there is no evidence of demand for that half of the bundle. |
+| 6 | A 50% lift pays for the promotion. | No cost, discount or margin data in the file. | Cannot be confirmed from this data; the promotion cost and margin must be obtained before acting. |
+
+## Pending (needs the scenario text)
+Tasks 2, 4 and 5 and the saved query for task 3 (`sql/d1_corrected.sql`) depend on the D1 and D2 scenario descriptions, which were not in the files provided.
